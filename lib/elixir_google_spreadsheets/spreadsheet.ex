@@ -23,7 +23,7 @@ defmodule GSS.Spreadsheet do
   @max_rows GSS.config(:max_rows_per_request, 301)
   @default_column_from GSS.config(:default_column_from, 1)
   @default_column_to GSS.config(:default_column_to, 26)
-  @default_timeout GSS.config(:genserver_timeout, 8000)
+  @default_timeout GSS.config(:genserver_timeout, 60000)
 
   @spec start_link(String.t(), Keyword.t()) :: {:ok, pid}
   def start_link(spreadsheet_id, opts) do
