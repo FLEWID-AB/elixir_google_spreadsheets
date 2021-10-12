@@ -80,7 +80,7 @@ defmodule GSS.Client do
 
     case options[:result_timeout] || config(:result_timeout) do
       nil ->
-        GenStage.call(__MODULE__, {:request, request})
+        GenStage.call(__MODULE__, {:request, request}, 60000)
 
       result_timeout ->
         GenStage.call(__MODULE__, {:request, request}, result_timeout)
