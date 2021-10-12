@@ -23,6 +23,7 @@ defmodule GSS.Spreadsheet do
   @max_rows GSS.config(:max_rows_per_request, 301)
   @default_column_from GSS.config(:default_column_from, 1)
   @default_column_to GSS.config(:default_column_to, 26)
+  @default_timeout GSS.config(:genserver_timeout, 8000)
 
   @spec start_link(String.t(), Keyword.t()) :: {:ok, pid}
   def start_link(spreadsheet_id, opts) do
@@ -39,7 +40,7 @@ defmodule GSS.Spreadsheet do
   """
   @spec id(pid) :: String.t()
   def id(pid) do
-    GenServer.call(pid, :id)
+    GenServer.call(pid, :id, @default_timeout)
   end
 
   @doc """
@@ -47,7 +48,7 @@ defmodule GSS.Spreadsheet do
   """
   @spec properties(pid) :: map()
   def properties(pid) do
-    GenServer.call(pid, :properties)
+    GenServer.call(pid, :properties, @default_timeout)
   end
 
   @doc """
@@ -55,7 +56,7 @@ defmodule GSS.Spreadsheet do
   """
   @spec sheets(pid, Keyword.t()) :: [map()] | map()
   def sheets(pid, opts \\ []) do
-    with {:ok, %{"sheets" => sheets}} <- GenServer.call(pid, :properties),
+    with {:ok, %{"sheets" => sheets}} <- GenServer.call(pid, :properties, @default_timeout),
          {:is_raw_response?, false, _} <-
            {:is_raw_response?, Keyword.get(opts, :raw, false), sheets} do
       Enum.reduce(sheets, %{}, fn %{"properties" => %{"title" => title} = properties}, acc ->
@@ -75,7 +76,7 @@ defmodule GSS.Spreadsheet do
   """
   @spec rows(pid) :: {:ok, integer()} | {:error, Exception.t()}
   def rows(pid) do
-    GenServer.call(pid, :rows)
+    GenServer.call(pid, :rows, @default_timeout)
   end
 
   @doc """
@@ -83,7 +84,7 @@ defmodule GSS.Spreadsheet do
   """
   @spec fetch(pid, String.t()) :: {:ok, spreadsheet_data} | {:error, Exception.t()}
   def fetch(pid, range) do
-    GenServer.call(pid, {:fetch, range})
+    GenServer.call(pid, {:fetch, range}, @default_timeout)
   end
 
   @doc """
@@ -710,7 +711,7 @@ defmodule GSS.Spreadsheet do
   defp gen_server_call(pid, tuple, options) do
     case Keyword.get(options, :timeout) do
       nil ->
-        GenServer.call(pid, tuple)
+        GenServer.call(pid, tuple, @default_timeout)
 
       timeout ->
         GenServer.call(pid, tuple, timeout)
